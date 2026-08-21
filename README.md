@@ -1,106 +1,72 @@
-# 🎵 MiniMax Music 3 - Local GPU Engine & Internet API Gateway
+# 🎵 MiniMax Music 3 - Full Stack AI Music Studio
 
-Kho mã nguồn đóng gói toàn bộ engine suy luận MiniMax Music 3 chạy cục bộ trên GPU NVIDIA (tối ưu hóa đặc biệt cho dòng card **16GB VRAM**), đồng thời tích hợp sẵn **FastAPI REST API Gateway** để gọi trực tiếp từ Internet thông qua domain **`apimusic.ksmart.com.es`**.
-
----
-
-## 🌐 1. Cấu Trúc API Internet (`apimusic.ksmart.com.es`)
-
-Gateway chạy trên cổng local `8000` (được Cloudflare Tunnel chuyển tiếp từ `https://apimusic.ksmart.com.es`):
-
-- **Swagger / OpenAPI Documentation:** `https://apimusic.ksmart.com.es/docs`
-- **Health Check:** `GET https://apimusic.ksmart.com.es/health`
-- **Tạo nhạc mới (Async Queue):** `POST https://apimusic.ksmart.com.es/v1/music/generate`
-- **Kiểm tra trạng thái tiến trình:** `GET https://apimusic.ksmart.com.es/v1/music/tasks/{task_id}`
-- **Tải file nhạc hoàn chỉnh:** `GET https://apimusic.ksmart.com.es/v1/music/tasks/{task_id}/download`
-
-### 📝 Chi tiết Payload `POST /v1/music/generate`
-```json
-{
-  "title": "Giai Điệu Mùa Thu",
-  "style": "Modern Pop Ballad, emotive acoustic guitar, warm bass, high fidelity studio master",
-  "lyrics": "[verse 1]\nWalking down the autumn street...\n[chorus]\nI remember the song of you and me...",
-  "vocal_mode": "female",
-  "instrumental": false,
-  "duration": 120,
-  "steps": 25,
-  "dit_cfg": 5.0,
-  "seed": -1,
-  "output_format": "mp3"
-}
-```
-
-### 📥 Phản hồi mẫu (Response):
-```json
-{
-  "task_id": "8f3b2a1c0d9e4a5b",
-  "status": "pending",
-  "progress": 0,
-  "created_at": 1740112800.0,
-  "duration": 120,
-  "title": "Giai Điệu Mùa Thu",
-  "error": null,
-  "download_url": null
-}
-```
-
-Khi task hoàn thành:
-`GET https://apimusic.ksmart.com.es/v1/music/tasks/8f3b2a1c0d9e4a5b`
-```json
-{
-  "task_id": "8f3b2a1c0d9e4a5b",
-  "status": "completed",
-  "progress": 100,
-  "download_url": "/v1/music/tasks/8f3b2a1c0d9e4a5b/download"
-}
-```
+Hệ thống tạo nhạc AI chất lượng cao toàn diện:
+- **Backend (Cloud GPU trên Lightning.ai):** Cung cấp CUDA inference engine (`minimaxmusic.cpp` GGUF 16GB VRAM) và FastAPI REST API Gateway kết nối qua `https://apimusic.ksmart.com.es`.
+- **Client (Trên PC cá nhân):** Bao gồm Desktop GUI hiện đại và Command-Line Interface (CLI) để gửi yêu cầu và tự động tải file bài hát hoàn chỉnh về máy tính.
 
 ---
 
-## ⚡ 2. Cấu Hình & Tối Ưu Cho VGA 16GB VRAM
+## 🖥️ 1. Hướng Dẫn Sử Dụng Trên PC Cá Nhân (Client)
 
-| Thành phần Model | File GGUF | Định dạng / Quant | Dung lượng VRAM |
-| :--- | :--- | :--- | :--- |
-| **Language Model (LM)** | `MiniMax-Music3-language_model-Q4_K_M.gguf` | Q4_K_M | ~4.5 GB |
-| **RVQ Depth Decoder** | `MiniMax-Music3-rvq_depth_decoder-Q8_0.gguf` | Q8_0 | ~0.4 GB |
-| **Condition Encoder** | `MiniMax-Music3-condition_encoder-F32.gguf` | F32 | ~0.1 GB |
-| **Diffusion Transformer (DiT)** | `MiniMax-Music3-transformer-Q4_K_M.gguf` | Q4_K_M | ~1.8 GB |
-| **Vocoder (VAE)** | `MiniMax-Music3-vocoder-F32.gguf` | F32 | ~0.2 GB |
-| **Tổng cộng** | **Bộ 5 weights hoàn chỉnh** | — | **~7.0 GB** |
+### 🔹 Cách 1: Sử dụng Desktop GUI (Giao diện đồ họa)
+Nhấp đúp vào **`run_gui.bat`** (hoặc chạy `python music_gui.py`):
+- **Trạng thái Server:** Hiển thị trực quan kết nối tới `https://apimusic.ksmart.com.es` (Xanh/Đỏ).
+- **Mẫu phong cách nhanh:** Pop Ballad, EDM Dance, Acoustic, Epic Cinematic, v.v.
+- **Trình soạn thảo lời (Lyrics):** Nút chèn nhanh cấu trúc `[verse]`, `[chorus]`, `[bridge]`, `[outro]`.
+- **Tiến trình sinh nhạc:** Thanh phần trăm động, không bị đơ giao diện.
+- **Tự động tải & Phát nhạc:** Nút **"▶️ Phát Bài Hát"** và **"📂 Mở Thư Mục"** (mặc định lưu tại thư mục `Music/MiniMax_AI`).
 
-> 🚀 Với cờ `--keep-loaded`, toàn bộ 5 mô hình thường trú trên VRAM 16GB, GPU không mất thời gian nạp lại model giữa các stage, cho tốc độ xử lý nhanh nhất.
+### 🔹 Cách 2: Sử dụng CLI (Dòng lệnh & Wizard hỏi đáp)
+- **Chế độ Wizard hỏi đáp từng bước:** Nhấp đúp vào **`run_cli.bat`** (hoặc `python music_cli.py wizard`).
+- **Tạo nhanh 1 dòng lệnh:**
+  ```bash
+  python music_cli.py generate --title "Summer Vibe" --style "Tropical House, sunny acoustic guitar, female vocal" --duration 120
+  ```
+- **Kiểm tra kết nối backend:**
+  ```bash
+  python music_cli.py health
+  ```
 
 ---
 
-## 🚀 3. Hướng Dẫn Vận Hành Hệ Thống
+## ☁️ 2. Triển Khai Backend Trên Lightning.ai (1-Click)
 
-### Bước 1: Cài đặt thư viện phụ trợ
+Chi tiết từng bước cấu hình Cloud GPU (L4 24GB / T4 16GB) và Cloudflare Tunnel tới `apimusic.ksmart.com.es` đã được lưu tại:
+👉 [DEPLOY_LIGHTNING_AI.md](file:///c:/Apps/23.%20Music%20OS/DEPLOY_LIGHTNING_AI.md)
+
+Tóm tắt lệnh chạy trên Lightning Studio:
 ```bash
-pip install -r requirements.txt
+# 1. Cài đặt tự động engine & tải model
+bash lightning_setup.sh
+
+# 2. Khởi chạy Inference Engine (Terminal 1)
+bash start_server_linux.sh
+
+# 3. Khởi chạy API Gateway (Terminal 2)
+bash start_api_linux.sh
+
+# 4. Khởi chạy Cloudflare Tunnel (Terminal 3)
+cloudflared tunnel run --token <YOUR_TOKEN>
 ```
 
-### Bước 2: Tải bộ Model GGUF (chỉ cần chạy lần đầu)
-```bash
-python download_models.py
+---
+
+## 📁 3. Cấu Trúc Thư Mục Dự Án
+
 ```
-*(Hoặc chạy `download_models.bat`)*
-
-### Bước 3: Khởi động Inference Engine
-Chạy `start_server.bat` (lắng nghe trên cổng `127.0.0.1:8086`).
-
-### Bước 4: Khởi động API Gateway (Internet Access)
-Chạy `start_api.bat` (lắng nghe trên cổng `0.0.0.0:8000`).
-
-### Bước 5: Kết nối Cloudflare Tunnel tới `apimusic.ksmart.com.es`
-Trên Cloudflare Zero Trust:
-1. Tạo hoặc chọn Tunnel hiện có.
-2. Thêm **Public Hostname**:
-   - **Subdomain:** `apimusic`
-   - **Domain:** `ksmart.com.es`
-   - **Type:** `HTTP`
-   - **URL:** `127.0.0.1:8000`
-3. Chạy lệnh:
-   ```cmd
-   cloudflared tunnel run --token <YOUR_TOKEN>
-   ```
-*(Hoặc xem hướng dẫn trong `setup_tunnel.bat`)*
+c:\Apps\23. Music OS\
+├── music_gui.py             # Desktop GUI Client hiện đại trên PC
+├── run_gui.bat              # Kích hoạt 1-click Desktop GUI
+├── music_cli.py             # CLI Client & Wizard hỏi đáp trên PC
+├── run_cli.bat              # Kích hoạt 1-click CLI Wizard
+├── remote_client.py         # Module kết nối API https://apimusic.ksmart.com.es
+├── api_server.py            # FastAPI REST Gateway (Chạy trên backend)
+├── DEPLOY_LIGHTNING_AI.md   # Hướng dẫn chi tiết triển khai Cloud Lightning.ai
+├── lightning_setup.sh       # Script 1-click build & setup cho Linux Lightning.ai
+├── start_server_linux.sh    # Khởi động Engine trên Linux
+├── start_api_linux.sh       # Khởi động API trên Linux
+├── runtime/                 # Nhân nhị phân CUDA mm-server.exe
+├── download_models.py       # Tải 5 model GGUF (Tối ưu 16GB VRAM)
+├── requirements.txt         # Thư viện Python phụ thuộc
+└── README.md                # Tài liệu tổng hợp
+```
