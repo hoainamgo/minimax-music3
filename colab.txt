@@ -1,0 +1,73 @@
+Có **2 cách chuẩn và ổn định nhất** để kết nối Google Colab (GPU T4/A100) về **VS Code** hoặc **Antigravity IDE** trên máy tính của bạn:
+
+---
+
+### 🚀 CÁCH 1: Dùng `colab-ssh` qua Cloudflare Tunnel (Khuyên dùng - Miễn phí 100%)
+
+Cách này cho phép bạn mở toàn bộ thư mục Colab và dùng Terminal GPU ngay trong VS Code / Antigravity như một máy Linux cục bộ thông qua Extension **Remote - SSH**.
+
+#### Bước 1: Cài đặt trên máy tính (PC)
+1. Cài đặt **cloudflared** trên PC (nếu chưa có):
+   ```cmd
+   winget install --id Cloudflare.cloudflared
+   ```
+2. Cài Extension **Remote - SSH** trên VS Code / Antigravity (Nhấn `Ctrl + Shift + X` → Tìm `Remote - SSH` → Cài đặt).
+
+---
+
+#### Bước 2: Chạy lệnh trên Google Colab
+Mở Google Colab (đã bật GPU) và chạy 1 đoạn mã duy nhất:
+
+```python
+# Cài đặt colab-ssh
+!pip install colab_ssh --upgrade
+
+from colab_ssh import launch_ssh_cloudflared
+# Đặt mật khẩu SSH cho Colab (ví dụ: 123456)
+launch_ssh_cloudflared(password="123456")
+```
+
+Sau khi chạy xong, Colab sẽ in ra một đoạn cấu hình SSH mẫu cho bạn:
+```
+Host colab
+    HostName xxxx.trycloudflare.com
+    User root
+    ProxyCommand cloudflared access ssh --hostname %h
+```
+
+---
+
+#### Bước 3: Kết nối từ VS Code / Antigravity
+1. Nhấn tổ hợp phím **`Ctrl + Shift + P`** → Chọn **`Remote-SSH: Open SSH Configuration File...`** → Chọn file `C:\Users\<Tên_Bạn>\.ssh\config`.
+2. Dán đoạn cấu hình mà Colab vừa in ra vào file rồi lưu lại (`Ctrl + S`).
+3. Nhấn **`Ctrl + Shift + P`** → Chọn **`Remote-SSH: Connect to Host...`** → Chọn **`colab`**.
+4. Cửa sổ mới sẽ mở ra → Nhập mật khẩu đã đặt ở Bước 2 (`123456`).
+5. **Hoàn tất!** Giờ bạn có thể mở thư mục `/content/minimax-music3` và chạy code trực tiếp trên GPU Colab từ giao diện VS Code.
+
+---
+
+---
+
+### ⚡ CÁCH 2: Kết nối Jupyter Kernel Colab vào VS Code (Chạy Notebook trực tiếp)
+
+Nếu bạn muốn viết và chạy từng cell code trên VS Code nhưng dùng phần cứng GPU của Colab:
+
+#### Bước 1: Lấy URL Jupyter Server trên Colab
+Trên Google Colab, chạy cell sau:
+```python
+import notebook
+from google.colab import output
+output.serve_kernel_port_as_iframe(8888)
+```
+Hoặc xem URL kèm Token tại góc trên bên phải của Colab: Nhấp vào nút mũi tên cạnh nút **Connect** → Chọn **Connect to a local runtime** hoặc xem thông tin Runtime.
+
+#### Bước 2: Chọn Kernel trong VS Code
+1. Mở file `MiniMax_Music3_Colab.ipynb` trong VS Code.
+2. Nhấp vào nút **Select Kernel** ở góc trên cùng bên phải.
+3. Chọn **Existing Jupyter Server...**.
+4. Dán link URL của Colab vào và nhấn Enter.
+
+---
+
+### 💡 Lưu ý duy trì kết nối Colab:
+- Colab miễn phí sẽ tự ngắt nếu không có tương tác sau một khoảng thời gian. Bạn nên giữ tab trình duyệt Colab mở ngầm khi làm việc qua VS Code.
