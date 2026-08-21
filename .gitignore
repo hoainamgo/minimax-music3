@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Windows Runtime DLLs (files > 100MB exceed GitHub limits)
+runtime/*.dll
+runtime/*.exe
+runtime/mm-server
+
+# Models & Large Data
+models/
+outputs/
+*.gguf
+*.exe.setup
+Minimaxmusic3_0.1.24_x64-setup.exe
+
+# Build artifacts
+build/
+bin/
+minimaxmusic.cpp/
+
+# Temporary / OS
+.DS_Store
+Thumbs.db
+*.log
